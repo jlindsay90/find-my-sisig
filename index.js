@@ -22,33 +22,32 @@ function getDates(response) {
   return function(e, xhr, body) { getSisigDates(response, e, xhr, body); }
 }
 
-/*
 function add(dict, key, value) {
     if (!dict[key])
         dict[key] = [];
     dict[key].push(value);
 }
-*/
 
 function getSisigDates(response, err, res, body) {
-  var table = document.createElement('table');
+  //var table = document.createElement('table');
 
-  //var dates = {};
+  var dates = {};
   if (!err && res.statusCode == 200) {
     var $ = cheerio.load(body);
     var sections = $('section');
     sections.each(function(i, elem) {
       var date = $(this).data('wcal-date');
       if (date && date != 'error') {
+        var loc = $(this).find('a.map-trigger').text().trim();
+        var day = $(this).find('div.date').text().trim().split(/[\s\n]+/);
+        var time = $(this).find('div.time').text().trim().replace(/(\w+)[\s\n]*to[\n\s]*(\w+)/, "$1 to $2");
+        add(dates, day[day.length-2] + " " + date, [time, loc]);
+
+        /*
         var row = document.createElement('tr');
         var dayCell = document.createElement('td');
         var timeCell = document.createElement('td');
         var locCell = document.createElement('td');
-
-        var loc = $(this).find('a.map-trigger').text().trim();
-        var day = $(this).find('div.date').text().replace(/\b(\w{3})\b/, "$1");
-        var time = $(this).find('div.time').text().trim().replace(/(\w+)[\s\n]*to[\n\s]*(\w+)/, "$1 to $2");
-        //add(dates, date, [loc, time]);
 
         dayCell.appendChild(document.createTextNode(day + " " + date));
         timeCell.appendChild(document.createTextNode(time));
@@ -57,10 +56,11 @@ function getSisigDates(response, err, res, body) {
         row.appendChild(dayCell);
         row.appendChild(timeCell);
         row.appendChild(locCell);
+        */
       }
     });
   }
-  response.send(table);
+  response.send(dates);
 }
 
 app.get('/', function(req, res) {
