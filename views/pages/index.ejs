@@ -14,7 +14,7 @@ ul {list-style-type:none; margin-bottom:15px; padding-left:25px;}
     <li><%= time %>
     <ul>
 <% for (var loc in dates[day][time]) { %>
-    <li><%= dates[day][time][loc] %></li>
+    <li><%= dates[day][time][loc] %> [<a href="maps:daddr=<%= dates[day][time][loc] %>&saddr=Current%20Location">Map</a>]</li>
 <% } %>
     </ul>
 <% } %>
