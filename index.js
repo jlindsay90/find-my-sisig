@@ -12,27 +12,21 @@ app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
-var logger = function(req, res, next) {
-  console.log(new Date().toISOString() + " " + req.connection.remoteAddress);
-  next();
-}
-app.use(logger);
-
-function getDates(response) {
-  return function(e, xhr, body) { getSisigDates(response, e, xhr, body); }
+function getDates(raw, httpReq, httpResp) {
+  return function(e, xhr, body) { getSisigDates(raw, httpResp, e, xhr, body); }
 }
 
-function add(dict, key, value) {
-    if (!dict[key])
-        dict[key] = [];
-    dict[key].push(value);
+function add(dict, day, time, loc) {
+  if (!dict.hasOwnProperty(day))
+    dict[day] = {};
+  if (!dict[day].hasOwnProperty(time))
+      dict[day][time] = [];
+  dict[day][time].push(loc);
 }
 
-function getSisigDates(response, err, res, body) {
-  //var table = document.createElement('table');
-
+function getSisigDates(raw, httpResp, err, xhrResp, body) {
   var dates = {};
-  if (!err && res.statusCode == 200) {
+  if (!err && xhrResp.statusCode == 200) {
     var $ = cheerio.load(body);
     var sections = $('section');
     sections.each(function(i, elem) {
@@ -40,27 +34,17 @@ function getSisigDates(response, err, res, body) {
       if (date && date != 'error') {
         var loc = $(this).find('a.map-trigger').text().trim();
         var day = $(this).find('div.date').text().trim().split(/[\s\n]+/);
-        var time = $(this).find('div.time').text().trim().replace(/(\w+)[\s\n]*to[\n\s]*(\w+)/, "$1 to $2");
-        add(dates, day[day.length-2] + " " + date, [time, loc]);
-
-        /*
-        var row = document.createElement('tr');
-        var dayCell = document.createElement('td');
-        var timeCell = document.createElement('td');
-        var locCell = document.createElement('td');
-
-        dayCell.appendChild(document.createTextNode(day + " " + date));
-        timeCell.appendChild(document.createTextNode(time));
-        locCell.appendChild(document.createTextNode(loc));
-
-        row.appendChild(dayCell);
-        row.appendChild(timeCell);
-        row.appendChild(locCell);
-        */
+        var time = $(this).find('div.time').text().trim().replace(/(\w+)[\s\n]*to[\n\s]*(\w+)/, "$1 - $2");
+        var dayStr = day[day.length-2] + " " + date;
+        add(dates, dayStr, time, loc);
       }
     });
   }
-  response.send(dates);
+
+  if (raw)
+    httpResp.json(dates);
+  else
+    httpResp.render('pages/index', {dates: dates});
 }
 
 app.get('/', function(req, res) {
@@ -71,11 +55,11 @@ app.get('/', function(req, res) {
       'Accept':'text/html;q=0.9,*;q=0.8'
     }
   };
-  request(options, getDates(res));
+  // TODO implement regular caching to prevent needless requests and parsing
+  request(options, getDates(req.query.raw, req, res));
 });
 
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
 });
-
 

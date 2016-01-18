@@ -1,7 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style type="text/css">
+ul {list-style-type:none; margin-bottom:15px; padding-left:25px;}
+</style>
 </head>
 <body>
+<% for (var day in dates) { %>
+    <h3><%= day %></h3>
+    <ul>
+<% for (var time in dates[day]) { %>
+    <li><%= time %>
+    <ul>
+<% for (var loc in dates[day][time]) { %>
+    <li><%= dates[day][time][loc] %></li>
+<% } %>
+    </ul>
+<% } %>
+    </ul>
+<% } %>
 </body>
 </html>
