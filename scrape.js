@@ -37,4 +37,4 @@ function makeRequest(httpRequest, httpResponse) {
   };
   // TODO implement regular caching to prevent needless requests and parsing
   request(options, getDates(req.query.raw, req, res));
-});
+};
