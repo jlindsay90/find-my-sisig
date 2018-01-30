@@ -14,7 +14,8 @@
     "request": "^2.83.0"
   },
   "engines": {
-    "node": "9.x"
+    "node": "9.x",
+    "npm": "5.6.0"
   },
   "repository": {
     "type": "git",
